@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import WebsiteGenerator from "@/components/WebsiteGenerator";
-import { Page, Website } from "@/lib/types";
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
