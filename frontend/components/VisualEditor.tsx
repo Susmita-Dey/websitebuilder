@@ -4,7 +4,7 @@ import { VisualEditorProps } from "@/lib/types";
 import { useState, useRef, useEffect } from "react";
 import React from "react";
 
-const VisualEditor = ({ page, onPageUpdate }: VisualEditorProps) => {
+const VisualEditor = ({ page, onPageUpdate, viewport }: VisualEditorProps) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [selectedElement, setSelectedElement] = useState<HTMLElement | null>(
     null
@@ -114,8 +114,23 @@ const VisualEditor = ({ page, onPageUpdate }: VisualEditorProps) => {
     setSelectedElement(null);
   };
 
+  const getViewportDimensions = () => {
+    switch (viewport) {
+      case "mobile":
+        return { width: "375px", height: "667px" };
+      case "tablet":
+        return { width: "768px", height: "1024px" };
+      default:
+        return { width: "100%", height: "600px" };
+    }
+  };
+  const { width, height } = getViewportDimensions();
+
   return (
-    <div className="relative rounded-xl overflow-hidden border border-border bg-background">
+    <div
+      className="relative rounded-xl overflow-hidden border border-border bg-background"
+      style={{ width, height }}
+    >
       {/* Toolbar */}
       <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-muted text-sm font-medium">
         <div className="text-muted-foreground">

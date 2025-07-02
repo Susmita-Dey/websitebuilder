@@ -45,13 +45,28 @@ async def edit_website(website_id: str, request: EditRequest):
         if not website:
             raise HTTPException(status_code=404, detail="Website not found")
 
-        updated_page = await ai_service.edit_page(
+        edit_result = await ai_service.edit_page(
             website["pages"], request.page_name, request.edit_instruction
         )
+
+        updated_page = next(
+            (
+                p
+                for p in edit_result["pages"]
+                if p["name"].lower() == request.page_name.lower()
+            ),
+            None,
+        )
+
+        if updated_page is None:
+            raise HTTPException(
+                status_code=500, detail="AI did not return an updated page"
+            )
 
         storage.update_page(website_id, request.page_name, updated_page)
         return {"success": True, "updated_page": updated_page}
     except Exception as e:
+        print(f"AI Edit Error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

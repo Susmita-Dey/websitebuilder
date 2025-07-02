@@ -18,7 +18,8 @@ const WebsiteGenerator = ({
     setIsLoading(true);
     try {
       const website = await generateWebsite(description.trim());
-      router.push(`/project/${website.id}`);
+      // FIX: use website.website_id
+      router.push(`/project/${website.website_id}`);
     } catch (error) {
       console.error("Generation error:", error);
       alert("Failed to generate website. Try again.");

@@ -1,3 +1,4 @@
+"use client";
 import { Page } from "@/lib/types";
 import React, { useRef, useState, useEffect } from "react";
 
@@ -29,7 +30,6 @@ const PagePreview = ({ page, viewport }: PagePreviewProps) => {
   };
 
   useEffect(() => {
-    // Reset loading when page or viewport changes
     setLoading(true);
   }, [page.html, viewport]);
 
@@ -64,6 +64,7 @@ const PagePreview = ({ page, viewport }: PagePreviewProps) => {
             </div>
           )}
           <iframe
+            key={viewport + page.html} // <-- force reload on viewport or html change
             ref={iframeRef}
             srcDoc={page.html}
             className="w-full h-full border-0"
