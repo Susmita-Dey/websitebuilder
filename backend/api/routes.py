@@ -39,6 +39,7 @@ async def get_page(website_id: str, page_name: str):
 
 
 @router.post("/website/{website_id}/edit")
+@router.post("/website/{website_id}/edit")
 async def edit_website(website_id: str, request: EditRequest):
     try:
         website = storage.get_website(website_id)
@@ -48,6 +49,13 @@ async def edit_website(website_id: str, request: EditRequest):
         edit_result = await ai_service.edit_page(
             website["pages"], request.page_name, request.edit_instruction
         )
+
+        # If AI failed, return error
+        if not edit_result.get("success"):
+            raise HTTPException(
+                status_code=500,
+                detail=f"AI failed to edit page: {edit_result.get('error', 'Unknown error')}",
+            )
 
         updated_page = next(
             (

@@ -3,6 +3,16 @@
 import { editWebsite } from "@/lib/api";
 import { AIEditPromptProps } from "@/lib/types";
 import React, { useState } from "react";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
 
 const AIEditPrompt = ({
   websiteId,
@@ -46,7 +56,6 @@ const AIEditPrompt = ({
     // Optionally auto-submit on click:
     setTimeout(() => {
       if (!isLoading) {
-        // Simulate form submission for accessibility
         (
           document.getElementById("ai-edit-form") as HTMLFormElement
         )?.requestSubmit();
@@ -55,62 +64,70 @@ const AIEditPrompt = ({
   };
 
   return (
-    <section className="bg-white border border-gray-200 rounded-xl shadow p-6 mb-4">
-      <h4 className="text-base font-semibold text-gray-900 mb-1">
-        AI Edit Page
-      </h4>
-      <p className="text-sm text-gray-600 mb-4">
-        Describe how you want to change this page. The AI will update the
-        content for you.
-      </p>
-      <form
-        id="ai-edit-form"
-        onSubmit={handlePromptSubmit}
-        className="space-y-4"
-        aria-busy={isLoading}
-      >
-        <textarea
-          value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
-          placeholder="Describe what you want to change..."
-          rows={3}
-          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none transition"
-          disabled={isLoading}
-          autoFocus
-        />
-        <button
-          type="submit"
-          disabled={isLoading || !prompt.trim()}
-          className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-400 disabled:opacity-50 disabled:cursor-not-allowed transition"
+    <Card className="mb-6">
+      <CardHeader>
+        <CardTitle className="text-base">AI Edit Page</CardTitle>
+        <CardDescription>
+          Describe how you want to change this page. The AI will update the
+          content for you.
+        </CardDescription>
+      </CardHeader>
+
+      <CardContent>
+        <form
+          id="ai-edit-form"
+          onSubmit={handlePromptSubmit}
+          aria-busy={isLoading}
+          className="space-y-4"
         >
-          {isLoading ? (
-            <span className="flex items-center justify-center">
-              <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
-              Applying Changes...
-            </span>
-          ) : (
-            "Apply Changes"
-          )}
-        </button>
-      </form>
-      <div className="mt-5">
-        <p className="text-xs text-gray-500 mb-2">Example prompts:</p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-          {examplePrompts.map((example, index) => (
-            <button
-              key={index}
-              type="button"
-              onClick={() => handleExampleClick(example)}
-              className="block w-full text-left px-3 py-2 text-xs text-gray-700 bg-gray-100 rounded-md border border-gray-200 hover:bg-indigo-50 focus:ring-2 focus:ring-indigo-400 transition"
+          <div className="grid gap-2">
+            <Label htmlFor="ai-prompt">Edit Instructions</Label>
+            <Textarea
+              id="ai-prompt"
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              placeholder="Describe what you want to change..."
+              rows={3}
               disabled={isLoading}
-              tabIndex={0}
-            >
-              {example}
-            </button>
-          ))}
+              autoFocus
+            />
+          </div>
+
+          <Button
+            type="submit"
+            disabled={isLoading || !prompt.trim()}
+            className="w-full"
+          >
+            {isLoading ? (
+              <span className="flex items-center justify-center gap-2">
+                <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
+                Applying Changes...
+              </span>
+            ) : (
+              "Apply Changes"
+            )}
+          </Button>
+        </form>
+
+        <div className="mt-6">
+          <p className="text-xs text-muted-foreground mb-2">Example prompts:</p>
+          <div className="grid grid-cols-1 gap-2">
+            {examplePrompts.map((example, index) => (
+              <Button
+                key={index}
+                type="button"
+                variant="outline"
+                className="justify-start text-left text-xs h-auto py-2 px-3"
+                onClick={() => handleExampleClick(example)}
+                disabled={isLoading}
+              >
+                {example}
+              </Button>
+            ))}
+          </div>
         </div>
-      </div>
-    </section>
+      </CardContent>
+    </Card>
   );
 };
 

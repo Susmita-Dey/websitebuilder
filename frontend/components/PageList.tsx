@@ -3,11 +3,14 @@ import React from "react";
 import { PageListProps } from "@/lib/types";
 
 const PageList = ({
-  pages,
+  pages = [],
   selectedPage,
   onPageSelect,
   onNewWebsite,
 }: PageListProps) => {
+  // Defensive: ensure pages is always an array
+  const safePages = Array.isArray(pages) ? pages : [];
+
   return (
     <div className="bg-background border border-border rounded-xl shadow p-6 space-y-4">
       {/* Header */}
@@ -55,7 +58,7 @@ const PageList = ({
       </div>
 
       {/* Page List */}
-      {pages.length === 0 ? (
+      {safePages.length === 0 ? (
         <div className="text-muted-foreground text-sm text-center py-8">
           No pages yet. Click{" "}
           <span className="font-semibold text-indigo-600">New Website</span> to
@@ -63,7 +66,7 @@ const PageList = ({
         </div>
       ) : (
         <div className="space-y-2">
-          {pages.map((page) => (
+          {safePages.map((page) => (
             <button
               key={page.slug}
               onClick={() => onPageSelect(page)}
@@ -85,7 +88,7 @@ const PageList = ({
 
       {/* Footer */}
       <div className="pt-4 border-t border-border text-sm text-muted-foreground">
-        {pages.length} page{pages.length !== 1 && "s"} generated
+        {safePages.length} page{safePages.length !== 1 && "s"} generated
       </div>
     </div>
   );

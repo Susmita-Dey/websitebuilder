@@ -12,7 +12,7 @@ const Navbar = () => {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b backdrop-blur bg-white/70 dark:bg-gray-900/70">
-      <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+      <div className="container px-16 py-3 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="text-xl font-bold text-indigo-600">
           AI SiteGen

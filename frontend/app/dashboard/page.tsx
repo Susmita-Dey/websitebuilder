@@ -28,7 +28,7 @@ const DashboardPage = () => {
   }, []);
 
   return (
-    <div className="container py-12">
+    <div className="mx-auto container px-16 py-12">
       <h1 className="text-3xl font-bold mb-6 text-primary">My Websites</h1>
 
       {loading ? (

@@ -2,116 +2,84 @@
 
 import { VisualEditorProps } from "@/lib/types";
 import { useState, useRef, useEffect } from "react";
-import React from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
 
 const VisualEditor = ({ page, onPageUpdate, viewport }: VisualEditorProps) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const [selectedElement, setSelectedElement] = useState<HTMLElement | null>(
-    null
-  );
-  const [editValue, setEditValue] = useState("");
-  const [isEditing, setIsEditing] = useState(false);
   const [editMode, setEditMode] = useState(false);
+  const [selected, setSelected] = useState<HTMLElement | null>(null);
+  const [editValue, setEditValue] = useState("");
+  const [editStyle, setEditStyle] = useState("");
   const [loading, setLoading] = useState(true);
 
-  // Clean up on edit mode toggle or page change
+  // Set up event listeners for selecting elements in edit mode
   useEffect(() => {
-    if (!editMode && iframeRef.current?.contentDocument) {
-      iframeRef.current.contentDocument
-        .querySelectorAll(".visual-editor-selected, .visual-editor-hover")
-        .forEach((el) =>
-          el.classList.remove("visual-editor-selected", "visual-editor-hover")
-        );
+    if (!editMode || !iframeRef.current) return;
 
-      setSelectedElement(null);
-      setIsEditing(false);
-    }
+    const iframe = iframeRef.current;
+    const doc = iframe.contentDocument;
+    if (!doc) return;
+
+    setLoading(false);
+
+    // Remove previous listeners and highlights
+    doc.querySelectorAll(".ve-selected, .ve-hover").forEach((el) => {
+      el.classList.remove("ve-selected", "ve-hover");
+    });
+
+    const editable = doc.querySelectorAll(
+      "h1, h2, h3, h4, h5, h6, p, a, span, button, div"
+    );
+
+    editable.forEach((el) => {
+      el.addEventListener("mouseenter", () => el.classList.add("ve-hover"));
+      el.addEventListener("mouseleave", () => el.classList.remove("ve-hover"));
+      el.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        doc
+          .querySelectorAll(".ve-selected")
+          .forEach((el) => el.classList.remove("ve-selected"));
+        el.classList.add("ve-selected");
+        setSelected(el as HTMLElement);
+        setEditValue((el as HTMLElement).textContent || "");
+        setEditStyle((el as HTMLElement).getAttribute("style") || "");
+      });
+    });
+
+    // Add highlight styles
+    const style = doc.createElement("style");
+    style.textContent = `
+      .ve-hover { outline: 2px dashed #6366f1 !important; cursor: pointer !important; }
+      .ve-selected { outline: 2px solid #6366f1 !important; background: rgba(99,102,241,0.08) !important; }
+    `;
+    style.setAttribute("data-ve-style", "true");
+    doc.head.appendChild(style);
+
+    return () => {
+      // Clean up listeners and styles
+      editable.forEach((el) => {
+        el.replaceWith(el.cloneNode(true));
+      });
+      doc.querySelectorAll("style[data-ve-style]").forEach((el) => el.remove());
+    };
   }, [editMode, page.html]);
 
+  // Remove selection on exit edit mode or page change
   useEffect(() => {
-    const iframe = iframeRef.current;
-    if (!iframe) return;
+    if (!editMode) setSelected(null);
+  }, [editMode, page.html]);
 
-    const handleIframeLoad = () => {
-      setLoading(false);
-      const doc = iframe.contentDocument;
-      if (!doc || !editMode) return;
-
-      // Remove stale listeners/styles
-      doc
-        .querySelectorAll("[data-ve-listener]")
-        .forEach((el) => el.replaceWith(el.cloneNode(true)));
-      doc.querySelectorAll("style[data-ve-style]").forEach((el) => el.remove());
-
-      // Add listeners
-      const editableElements = doc.querySelectorAll(
-        "[contenteditable='true'], h1, h2, h3, h4, h5, h6, p, a, span, button, div"
-      );
-
-      editableElements.forEach((element) => {
-        const el = element as HTMLElement;
-        el.setAttribute("data-ve-listener", "true");
-
-        el.addEventListener("click", (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-
-          doc.querySelectorAll(".visual-editor-selected").forEach((el) => {
-            el.classList.remove("visual-editor-selected");
-          });
-
-          el.classList.add("visual-editor-selected");
-          setSelectedElement(el);
-          setEditValue(el.textContent || "");
-          setIsEditing(true);
-        });
-
-        el.addEventListener("mouseenter", () =>
-          el.classList.add("visual-editor-hover")
-        );
-        el.addEventListener("mouseleave", () =>
-          el.classList.remove("visual-editor-hover")
-        );
-      });
-
-      // Style overlays
-      const style = doc.createElement("style");
-      style.setAttribute("data-ve-style", "true");
-      style.textContent = `
-        .visual-editor-hover {
-          outline: 2px dashed #6366f1 !important;
-          cursor: pointer !important;
-        }
-        .visual-editor-selected {
-          outline: 2px solid #6366f1 !important;
-          background-color: rgba(99, 102, 241, 0.08) !important;
-        }
-      `;
-      doc.head.appendChild(style);
-    };
-
-    setLoading(true);
-    iframe.addEventListener("load", handleIframeLoad);
-    return () => iframe.removeEventListener("load", handleIframeLoad);
-  }, [page.html, editMode]);
-
-  const handleSaveEdit = () => {
-    if (!selectedElement || !iframeRef.current?.contentDocument) return;
-
-    selectedElement.textContent = editValue;
+  const handleSave = () => {
+    if (!selected || !iframeRef.current?.contentDocument) return;
+    selected.textContent = editValue;
+    selected.setAttribute("style", editStyle);
     const updatedHtml =
       iframeRef.current.contentDocument.documentElement.outerHTML;
-
     onPageUpdate({ ...page, html: updatedHtml });
-
-    setIsEditing(false);
-    setSelectedElement(null);
-  };
-
-  const handleCancelEdit = () => {
-    setIsEditing(false);
-    selectedElement?.classList.remove("visual-editor-selected");
-    setSelectedElement(null);
+    setSelected(null);
   };
 
   const getViewportDimensions = () => {
@@ -127,56 +95,51 @@ const VisualEditor = ({ page, onPageUpdate, viewport }: VisualEditorProps) => {
   const { width, height } = getViewportDimensions();
 
   return (
-    <div
-      className="relative rounded-xl overflow-hidden border border-border bg-background"
-      style={{ width, height }}
-    >
+    <Card className="relative overflow-hidden" style={{ width, height }}>
       {/* Toolbar */}
       <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-muted text-sm font-medium">
-        <div className="text-muted-foreground">
-          <strong className="text-foreground">Visual Editor</strong>{" "}
-          <span className="hidden sm:inline">
-            | Click &quot;Edit Mode&quot; to begin editing
+        <div>
+          <span className="font-semibold">Visual Editor</span>
+          <span className="ml-2 text-xs text-muted-foreground">
+            {editMode
+              ? "Click an element to edit"
+              : "Enable edit mode to begin"}
           </span>
         </div>
-        <button
+        <Button
+          variant={editMode ? "default" : "outline"}
+          size="sm"
           onClick={() => setEditMode((v) => !v)}
-          className={`px-3 py-1 rounded font-medium transition text-sm ${
-            editMode
-              ? "bg-indigo-600 text-white hover:bg-indigo-700"
-              : "bg-white dark:bg-background text-indigo-700 border border-indigo-300 hover:bg-muted"
-          } ${isEditing ? "opacity-60 cursor-not-allowed" : ""}`}
-          disabled={isEditing}
         >
           {editMode ? "Exit Edit Mode" : "Enter Edit Mode"}
-        </button>
+        </Button>
       </div>
 
-      {/* Inline Edit Panel */}
-      {isEditing && (
-        <div className="absolute z-20 top-5 left-1/2 -translate-x-1/2 bg-background border border-border rounded-lg shadow-md px-4 py-3 flex flex-col sm:flex-row gap-2 items-center animate-fade-in">
-          <input
+      {/* Edit Panel */}
+      {editMode && selected && (
+        <Card className="absolute z-20 top-5 left-1/2 -translate-x-1/2 border border-border rounded-lg shadow-md px-4 py-3 flex flex-col sm:flex-row gap-2 items-center w-[90%] max-w-xl">
+          <Input
             type="text"
             value={editValue}
             onChange={(e) => setEditValue(e.target.value)}
-            className="px-3 py-1 border border-border rounded w-full sm:w-auto text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full sm:w-auto text-sm"
             aria-label="Edit text"
           />
-          <div className="flex gap-2">
-            <button
-              onClick={handleSaveEdit}
-              className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition"
-            >
-              Save
-            </button>
-            <button
-              onClick={handleCancelEdit}
-              className="px-3 py-1 bg-muted text-muted-foreground border border-border rounded text-sm hover:bg-muted/60 transition"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
+          <Input
+            type="text"
+            value={editStyle}
+            onChange={(e) => setEditStyle(e.target.value)}
+            className="w-full sm:w-auto text-sm"
+            aria-label="Edit style"
+            placeholder="CSS style (e.g. color: red; font-size: 2rem;)"
+          />
+          <Button size="sm" variant="default" onClick={handleSave}>
+            Save
+          </Button>
+          <Button size="sm" variant="outline" onClick={() => setSelected(null)}>
+            Cancel
+          </Button>
+        </Card>
       )}
 
       {/* Preview Area */}
@@ -192,9 +155,10 @@ const VisualEditor = ({ page, onPageUpdate, viewport }: VisualEditorProps) => {
           className="w-full h-full border-none"
           sandbox="allow-scripts allow-same-origin"
           title={`Visual Editor - ${page.name}`}
+          onLoad={() => setLoading(false)}
         />
       </div>
-    </div>
+    </Card>
   );
 };
 

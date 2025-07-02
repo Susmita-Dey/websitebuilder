@@ -1,25 +1,7 @@
 @import "tailwindcss";
-@import "tailwindcss/preflight";
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
-@tailwind utilities;
-
-@layer base {
-  html {
-    font-family: system-ui, sans-serif;
-  }
-}
-
-@layer components {
-  .btn-primary {
-    @apply bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors;
-  }
-
-  .btn-secondary {
-    @apply bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors;
-  }
-}
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {

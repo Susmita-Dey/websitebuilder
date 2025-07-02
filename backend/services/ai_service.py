@@ -112,7 +112,13 @@ Make the content realistic and relevant to the described business/purpose."""
                 break
 
         if not target_page:
-            raise ValueError(f"Page '{page_name}' not found")
+            # Instead of raising, return a failure dict
+            return {
+                "pages": pages,
+                "edited_page": page_name,
+                "success": False,
+                "error": f"Page '{page_name}' not found",
+            }
 
         system_prompt = """You are an expert web developer. Edit the provided HTML/CSS based on the user's instruction.
 
