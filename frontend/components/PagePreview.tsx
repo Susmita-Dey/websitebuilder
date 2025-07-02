@@ -1,15 +1,29 @@
 import { PagePreviewProps } from "@/lib/types";
 import React, { useRef, useState } from "react";
 
+type ViewportSize = "desktop" | "tablet" | "mobile";
+
 const PagePreview = ({ page }: PagePreviewProps) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [loading, setLoading] = useState(true);
+  const [viewport, setViewport] = useState<ViewportSize>("desktop");
 
   const handleReload = () => {
     setLoading(true);
     // Force reload by resetting srcDoc
     if (iframeRef.current) {
       iframeRef.current.srcdoc = page.html;
+    }
+  };
+
+  const getViewportDimensions = () => {
+    switch (viewport) {
+      case "mobile":
+        return { width: "375px", height: "667px" };
+      case "tablet":
+        return { width: "768px", height: "1024px" };
+      default:
+        return { width: "100%", height: "600px" };
     }
   };
 
