@@ -19,6 +19,10 @@ class GeminiAIService:
         # Updated model name - use gemini-1.5-flash for better performance
         self.model = genai.GenerativeModel("gemini-1.5-flash")
 
+    def _strip_code_fences(self, text: str) -> str:
+        """Remove Markdown-style code fences from AI response."""
+        return re.sub(r"^```(?:html)?\s*|```$", "", text.strip(), flags=re.MULTILINE)
+
     async def generate_website(self, description: str) -> Dict[str, Any]:
         """Generate a complete website based on description"""
 

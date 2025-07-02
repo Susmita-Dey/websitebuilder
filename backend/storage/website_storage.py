@@ -1,6 +1,7 @@
 from typing import Dict, List, Any, Optional
 import uuid
 from datetime import datetime
+from models.schemas import Website
 
 
 class WebsiteStorage:
@@ -47,3 +48,9 @@ class WebsiteStorage:
     def list_websites(self) -> List[Dict[str, Any]]:
         """List all websites"""
         return list(self.websites.values())
+
+    # Assume in-memory store (can be replaced with a DB later)
+    websites_store: dict[str, Website] = {}
+
+    def get_all_websites() -> List[Website]:
+        return list(self.websites_store.values())

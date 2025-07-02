@@ -7,10 +7,13 @@ interface Page {
 
 interface PagePreviewProps {
   page: Page;
+  viewport: "mobile" | "tablet" | "desktop";
 }
 
 interface Website {
   id: string;
+  name: string;
+  description?: string;
   pages: Page[];
 }
 
@@ -24,6 +27,7 @@ interface PageListProps {
 interface VisualEditorProps {
   page: Page;
   onPageUpdate: (page: Page) => void;
+  viewport: "mobile" | "tablet" | "desktop";
 }
 
 interface AIEditPromptProps {

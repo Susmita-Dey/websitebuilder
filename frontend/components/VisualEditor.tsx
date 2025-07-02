@@ -14,7 +14,7 @@ const VisualEditor = ({ page, onPageUpdate }: VisualEditorProps) => {
   const [editMode, setEditMode] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Clean up highlights on mode exit
+  // Clean up on edit mode toggle or page change
   useEffect(() => {
     if (!editMode && iframeRef.current?.contentDocument) {
       iframeRef.current.contentDocument
@@ -22,6 +22,7 @@ const VisualEditor = ({ page, onPageUpdate }: VisualEditorProps) => {
         .forEach((el) =>
           el.classList.remove("visual-editor-selected", "visual-editor-hover")
         );
+
       setSelectedElement(null);
       setIsEditing(false);
     }
@@ -34,42 +35,46 @@ const VisualEditor = ({ page, onPageUpdate }: VisualEditorProps) => {
     const handleIframeLoad = () => {
       setLoading(false);
       const doc = iframe.contentDocument;
-      if (!doc) return;
+      if (!doc || !editMode) return;
 
-      // Remove previous listeners/styles
-      doc.querySelectorAll("[data-ve-listener]").forEach((el) => {
-        el.replaceWith(el.cloneNode(true));
-      });
+      // Remove stale listeners/styles
+      doc
+        .querySelectorAll("[data-ve-listener]")
+        .forEach((el) => el.replaceWith(el.cloneNode(true)));
       doc.querySelectorAll("style[data-ve-style]").forEach((el) => el.remove());
 
-      if (!editMode) return;
-
-      // Add click/hover listeners to editable elements
+      // Add listeners
       const editableElements = doc.querySelectorAll(
         "[contenteditable='true'], h1, h2, h3, h4, h5, h6, p, a, span, button, div"
       );
+
       editableElements.forEach((element) => {
-        (element as HTMLElement).setAttribute("data-ve-listener", "true");
-        element.addEventListener("click", (e) => {
+        const el = element as HTMLElement;
+        el.setAttribute("data-ve-listener", "true");
+
+        el.addEventListener("click", (e) => {
           e.preventDefault();
           e.stopPropagation();
+
           doc.querySelectorAll(".visual-editor-selected").forEach((el) => {
             el.classList.remove("visual-editor-selected");
           });
-          element.classList.add("visual-editor-selected");
-          setSelectedElement(element as HTMLElement);
-          setEditValue(element.textContent || "");
+
+          el.classList.add("visual-editor-selected");
+          setSelectedElement(el);
+          setEditValue(el.textContent || "");
           setIsEditing(true);
         });
-        element.addEventListener("mouseenter", () => {
-          element.classList.add("visual-editor-hover");
-        });
-        element.addEventListener("mouseleave", () => {
-          element.classList.remove("visual-editor-hover");
-        });
+
+        el.addEventListener("mouseenter", () =>
+          el.classList.add("visual-editor-hover")
+        );
+        el.addEventListener("mouseleave", () =>
+          el.classList.remove("visual-editor-hover")
+        );
       });
 
-      // Add CSS for visual editor
+      // Style overlays
       const style = doc.createElement("style");
       style.setAttribute("data-ve-style", "true");
       style.textContent = `
@@ -87,90 +92,91 @@ const VisualEditor = ({ page, onPageUpdate }: VisualEditorProps) => {
 
     setLoading(true);
     iframe.addEventListener("load", handleIframeLoad);
-    return () => {
-      iframe.removeEventListener("load", handleIframeLoad);
-    };
+    return () => iframe.removeEventListener("load", handleIframeLoad);
   }, [page.html, editMode]);
 
   const handleSaveEdit = () => {
-    if (!selectedElement) return;
+    if (!selectedElement || !iframeRef.current?.contentDocument) return;
+
     selectedElement.textContent = editValue;
-    const iframe = iframeRef.current;
-    if (!iframe?.contentDocument) return;
-    const updatedHtml = iframe.contentDocument.documentElement.outerHTML;
+    const updatedHtml =
+      iframeRef.current.contentDocument.documentElement.outerHTML;
+
     onPageUpdate({ ...page, html: updatedHtml });
+
     setIsEditing(false);
     setSelectedElement(null);
   };
 
   const handleCancelEdit = () => {
     setIsEditing(false);
-    if (selectedElement) {
-      selectedElement.classList.remove("visual-editor-selected");
-    }
+    selectedElement?.classList.remove("visual-editor-selected");
     setSelectedElement(null);
   };
 
   return (
-    <div className="relative">
-      <div className="bg-indigo-50 border-b border-indigo-200 px-4 py-2 flex items-center justify-between">
-        <div className="text-sm text-indigo-700 flex items-center gap-2">
-          <strong>Visual Editor</strong>
+    <div className="relative rounded-xl overflow-hidden border border-border bg-background">
+      {/* Toolbar */}
+      <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-muted text-sm font-medium">
+        <div className="text-muted-foreground">
+          <strong className="text-foreground">Visual Editor</strong>{" "}
           <span className="hidden sm:inline">
-            | Click "Edit Mode" to enable editing
+            | Click "Edit Mode" to begin editing
           </span>
         </div>
         <button
           onClick={() => setEditMode((v) => !v)}
-          className={`px-3 py-1 rounded font-medium text-sm transition ${
+          className={`px-3 py-1 rounded font-medium transition text-sm ${
             editMode
               ? "bg-indigo-600 text-white hover:bg-indigo-700"
-              : "bg-white text-indigo-700 border border-indigo-300 hover:bg-indigo-50"
+              : "bg-white dark:bg-background text-indigo-700 border border-indigo-300 hover:bg-muted"
           } ${isEditing ? "opacity-60 cursor-not-allowed" : ""}`}
           disabled={isEditing}
-          aria-pressed={editMode}
         >
           {editMode ? "Exit Edit Mode" : "Enter Edit Mode"}
         </button>
       </div>
 
+      {/* Inline Edit Panel */}
       {isEditing && (
-        <div className="absolute top-4 left-1/2 z-20 -translate-x-1/2 bg-white border border-gray-200 rounded-lg shadow-lg px-4 py-3 flex items-center gap-2">
+        <div className="absolute z-20 top-5 left-1/2 -translate-x-1/2 bg-background border border-border rounded-lg shadow-md px-4 py-3 flex flex-col sm:flex-row gap-2 items-center animate-fade-in">
           <input
             type="text"
             value={editValue}
             onChange={(e) => setEditValue(e.target.value)}
-            className="px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-indigo-400"
-            autoFocus
+            className="px-3 py-1 border border-border rounded w-full sm:w-auto text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             aria-label="Edit text"
           />
-          <button
-            onClick={handleSaveEdit}
-            className="px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700 focus:ring-2 focus:ring-green-400"
-          >
-            Save
-          </button>
-          <button
-            onClick={handleCancelEdit}
-            className="px-3 py-1 text-sm bg-gray-500 text-white rounded hover:bg-gray-600 focus:ring-2 focus:ring-gray-400"
-          >
-            Cancel
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={handleSaveEdit}
+              className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition"
+            >
+              Save
+            </button>
+            <button
+              onClick={handleCancelEdit}
+              className="px-3 py-1 bg-muted text-muted-foreground border border-border rounded text-sm hover:bg-muted/60 transition"
+            >
+              Cancel
+            </button>
+          </div>
         </div>
       )}
 
-      <div className="h-[600px] border border-gray-200 bg-white overflow-hidden relative">
+      {/* Preview Area */}
+      <div className="relative h-[600px] w-full overflow-hidden">
         {loading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-80 z-10">
-            <span className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></span>
+          <div className="absolute inset-0 flex items-center justify-center bg-background/70 z-10">
+            <span className="animate-spin h-8 w-8 border-2 border-indigo-500 border-t-transparent rounded-full" />
           </div>
         )}
         <iframe
           ref={iframeRef}
           srcDoc={page.html}
-          className="w-full h-full border-0"
-          title={`Visual Editor for ${page.name} page`}
+          className="w-full h-full border-none"
           sandbox="allow-scripts allow-same-origin"
+          title={`Visual Editor - ${page.name}`}
         />
       </div>
     </div>

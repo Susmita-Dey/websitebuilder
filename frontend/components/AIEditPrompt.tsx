@@ -47,16 +47,21 @@ const AIEditPrompt = ({
     setTimeout(() => {
       if (!isLoading) {
         // Simulate form submission for accessibility
-        (document.getElementById("ai-edit-form") as HTMLFormElement)?.requestSubmit();
+        (
+          document.getElementById("ai-edit-form") as HTMLFormElement
+        )?.requestSubmit();
       }
     }, 0);
   };
 
   return (
     <section className="bg-white border border-gray-200 rounded-xl shadow p-6 mb-4">
-      <h4 className="text-base font-semibold text-gray-900 mb-1">AI Edit Page</h4>
+      <h4 className="text-base font-semibold text-gray-900 mb-1">
+        AI Edit Page
+      </h4>
       <p className="text-sm text-gray-600 mb-4">
-        Describe how you want to change this page. The AI will update the content for you.
+        Describe how you want to change this page. The AI will update the
+        content for you.
       </p>
       <form
         id="ai-edit-form"
