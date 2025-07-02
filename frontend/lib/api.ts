@@ -1,4 +1,5 @@
-const API_BASE_URL = "http://localhost:8000"; // Replace with your actual base URL
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
 export async function generateWebsite(description: string) {
   const response = await fetch(`${API_BASE_URL}/api/generate-website`, {
