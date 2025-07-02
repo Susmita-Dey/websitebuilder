@@ -1,3 +1,6 @@
+# NOTE: Kindly run the application locally for smooth experience because the AI API calls are rate-limited and may not work on the live demo. Use your onw Gemini API key under backend folder
+
+---
 
 # AI-Powered Website Generator
 ## 🌐 **Overview:**
