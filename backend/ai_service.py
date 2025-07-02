@@ -16,7 +16,8 @@ class GeminiAIService:
             raise ValueError("GEMINI_API_KEY environment variable is required")
 
         genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel("gemini-pro")
+        # Updated model name - use gemini-1.5-flash for better performance
+        self.model = genai.GenerativeModel("gemini-1.5-flash")
 
     async def generate_website(self, description: str) -> Dict[str, Any]:
         """Generate a complete website based on description"""
