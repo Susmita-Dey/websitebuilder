@@ -6,7 +6,6 @@ import { generateWebsite } from "@/lib/api";
 import { WebsiteGeneratorProps } from "@/lib/types";
 
 const WebsiteGenerator = ({
-  onWebsiteGenerated,
   isLoading,
   setIsLoading,
 }: WebsiteGeneratorProps) => {
@@ -19,7 +18,6 @@ const WebsiteGenerator = ({
     setIsLoading(true);
     try {
       const website = await generateWebsite(description.trim());
-      onWebsiteGenerated(website);
       router.push(`/project/${website.id}`);
     } catch (error) {
       console.error("Generation error:", error);

@@ -121,7 +121,7 @@ const VisualEditor = ({ page, onPageUpdate }: VisualEditorProps) => {
         <div className="text-muted-foreground">
           <strong className="text-foreground">Visual Editor</strong>{" "}
           <span className="hidden sm:inline">
-            | Click "Edit Mode" to begin editing
+            | Click &quot;Edit Mode&quot; to begin editing
           </span>
         </div>
         <button

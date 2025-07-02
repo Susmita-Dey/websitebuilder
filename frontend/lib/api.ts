@@ -39,7 +39,7 @@ export async function getPage(websiteId: string, pageName: string) {
 export async function updatePage(
   websiteId: string,
   pageName: string,
-  content: any
+  content: string
 ) {
   const response = await fetch(
     `${API_BASE_URL}/api/website/${websiteId}/page/${pageName}`,

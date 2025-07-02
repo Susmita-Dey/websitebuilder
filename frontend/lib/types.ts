@@ -33,11 +33,10 @@ interface VisualEditorProps {
 interface AIEditPromptProps {
   websiteId: string;
   pageName: string;
-  onPageUpdate: (page: any) => void;
+  onPageUpdate: (page: Page) => void;
 }
 
 interface WebsiteGeneratorProps {
-  onWebsiteGenerated: (website: any) => void;
   isLoading: boolean;
   setIsLoading: (loading: boolean) => void;
 }

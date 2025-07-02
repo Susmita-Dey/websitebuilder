@@ -5,16 +5,7 @@ import WebsiteGenerator from "@/components/WebsiteGenerator";
 import { Page, Website } from "@/lib/types";
 
 export default function Home() {
-  const [website, setWebsite] = useState<Website | null>(null);
-  const [selectedPage, setSelectedPage] = useState<Page | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-
-  const handleWebsiteGenerated = (generatedWebsite: Website) => {
-    setWebsite(generatedWebsite);
-    if (generatedWebsite.pages.length > 0) {
-      setSelectedPage(generatedWebsite.pages[0]);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-200 via-purple-100 to-pink-100 relative overflow-x-hidden flex flex-col items-center justify-center my-5">
@@ -54,11 +45,7 @@ export default function Home() {
         </div>
 
         <div className="max-w-2xl mx-auto">
-          <WebsiteGenerator
-            onWebsiteGenerated={handleWebsiteGenerated}
-            isLoading={isLoading}
-            setIsLoading={setIsLoading}
-          />
+          <WebsiteGenerator isLoading={isLoading} setIsLoading={setIsLoading} />
         </div>
       </main>
 

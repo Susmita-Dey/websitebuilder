@@ -7,22 +7,40 @@ import VisualEditor from "@/components/VisualEditor";
 import { Page, Website } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 
 type Viewport = "desktop" | "tablet" | "mobile";
 
 const ProjectPage = () => {
+  const params = useParams();
+  const router = useRouter();
+  const websiteId = params?.id as string;
+
   const [website, setWebsite] = useState<Website | null>(null);
   const [selectedPage, setSelectedPage] = useState<Page | null>(null);
   const [showEditor, setShowEditor] = useState(false);
   const [viewport, setViewport] = useState<Viewport>("desktop");
+  const [loading, setLoading] = useState(true);
 
-  const handleWebsiteGenerated = (generatedWebsite: Website) => {
-    setWebsite(generatedWebsite);
-    if (generatedWebsite.pages.length > 0) {
-      setSelectedPage(generatedWebsite.pages[0]);
-    }
-  };
+  // Fetch website by id
+  useEffect(() => {
+    if (!websiteId) return;
+    setLoading(true);
+    fetch(`/api/website/${websiteId}`)
+      .then((res) => res.json())
+      .then((data) => {
+        setWebsite(data.website || data); // support both {website: ...} and direct
+        if ((data.website || data).pages?.length > 0) {
+          setSelectedPage((data.website || data).pages[0]);
+        }
+      })
+      .catch(() => {
+        setWebsite(null);
+        setSelectedPage(null);
+      })
+      .finally(() => setLoading(false));
+  }, [websiteId]);
 
   const handlePageSelect = (page: Page) => {
     setSelectedPage(page);
@@ -41,19 +59,36 @@ const ProjectPage = () => {
     setSelectedPage(updatedPage);
   };
 
+  if (loading) {
+    return (
+      <div className="container py-10 text-center text-lg text-muted-foreground">
+        Loading website...
+      </div>
+    );
+  }
+
+  if (!website) {
+    return (
+      <div className="container py-10 text-center text-lg text-red-500">
+        Website not found.
+        <Button className="ml-4" onClick={() => router.push("/dashboard")}>
+          Back to Dashboard
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className="container py-10">
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Sidebar */}
         <aside className="lg:col-span-1">
           <PageList
-            pages={website?.pages ?? []}
+            pages={website.pages}
             selectedPage={selectedPage}
             onPageSelect={handlePageSelect}
             onNewWebsite={() => {
-              setWebsite(null);
-              setSelectedPage(null);
-              setShowEditor(false);
+              router.push("/"); // Go to generator
             }}
           />
           {selectedPage && (
@@ -66,7 +101,7 @@ const ProjectPage = () => {
                 {showEditor ? "View Mode" : "Edit Mode"}
               </Button>
               <AIEditPrompt
-                websiteId={website?.id ?? ""}
+                websiteId={website.id}
                 pageName={selectedPage.name}
                 onPageUpdate={handlePageUpdate}
               />
