@@ -32,6 +32,12 @@ interface AIEditPromptProps {
   onPageUpdate: (page: any) => void;
 }
 
+interface WebsiteGeneratorProps {
+  onWebsiteGenerated: (website: any) => void;
+  isLoading: boolean;
+  setIsLoading: (loading: boolean) => void;
+}
+
 export type {
   Page,
   PagePreviewProps,
@@ -39,4 +45,5 @@ export type {
   PageListProps,
   VisualEditorProps,
   AIEditPromptProps,
+  WebsiteGeneratorProps,
 };

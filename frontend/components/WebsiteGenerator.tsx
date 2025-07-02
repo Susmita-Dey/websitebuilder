@@ -2,12 +2,7 @@
 
 import { useState } from "react";
 import { generateWebsite } from "@/lib/api";
-
-interface WebsiteGeneratorProps {
-  onWebsiteGenerated: (website: any) => void;
-  isLoading: boolean;
-  setIsLoading: (loading: boolean) => void;
-}
+import { WebsiteGeneratorProps } from "@/lib/types";
 
 const WebsiteGenerator = ({
   onWebsiteGenerated,
@@ -22,7 +17,7 @@ const WebsiteGenerator = ({
       alert("Please enter a description for your website.");
       return;
     }
-
+    setIsLoading(true);
     try {
       const result = await generateWebsite(description);
       onWebsiteGenerated(result);
@@ -32,7 +27,6 @@ const WebsiteGenerator = ({
     } finally {
       setIsLoading(false);
     }
-    setIsLoading(true);
   };
 
   const examplePrompts = [
@@ -43,19 +37,35 @@ const WebsiteGenerator = ({
     "A personal blog website with posts, about, and contact pages",
   ];
 
+  const handleExampleClick = (prompt: string) => {
+    setDescription(prompt);
+    setTimeout(() => {
+      (
+        document.getElementById("website-gen-form") as HTMLFormElement
+      )?.requestSubmit();
+    }, 0);
+  };
+
+  const handleClear = () => setDescription("");
+
   return (
-    <div className="bg-white rounded-xl shadow-lg p-8">
+    <div className="bg-white rounded-xl shadow-lg p-8 max-w-2xl mx-auto">
       <div className="text-center mb-6">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">
           Describe Your Website
         </h2>
         <p className="text-gray-600">
           Tell us what kind of website you want, and our AI will build it for
-          you
+          you.
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form
+        id="website-gen-form"
+        onSubmit={handleSubmit}
+        className="space-y-6"
+        aria-busy={isLoading}
+      >
         <div>
           <label
             htmlFor="description"
@@ -63,21 +73,43 @@ const WebsiteGenerator = ({
           >
             Website Description
           </label>
-          <textarea
-            id="description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="I want a website for..."
-            rows={4}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
-            disabled={isLoading}
-          />
+          <div className="relative">
+            <textarea
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="I want a website for..."
+              rows={4}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none pr-10"
+              disabled={isLoading}
+              autoFocus
+            />
+            {description && (
+              <button
+                type="button"
+                onClick={handleClear}
+                className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 focus:outline-none"
+                tabIndex={-1}
+                aria-label="Clear description"
+                disabled={isLoading}
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 20 20">
+                  <path
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    d="M6 6l8 8M6 14L14 6"
+                  />
+                </svg>
+              </button>
+            )}
+          </div>
         </div>
 
         <button
           type="submit"
           disabled={isLoading || !description.trim()}
-          className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 px-6 rounded-lg font-medium hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
+          className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 px-6 rounded-lg font-medium hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-400"
         >
           {isLoading ? (
             <div className="flex items-center justify-center">
@@ -90,7 +122,9 @@ const WebsiteGenerator = ({
         </button>
       </form>
 
-      <div className="mt-8">
+      <div className="my-8 border-t border-gray-200"></div>
+
+      <div>
         <h3 className="text-sm font-medium text-gray-700 mb-3">
           Example prompts:
         </h3>
@@ -98,11 +132,12 @@ const WebsiteGenerator = ({
           {examplePrompts.map((prompt, index) => (
             <button
               key={index}
-              onClick={() => setDescription(prompt)}
-              className="text-left p-3 text-sm text-gray-600 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+              type="button"
+              onClick={() => handleExampleClick(prompt)}
+              className="text-left p-3 text-sm text-gray-700 bg-gray-50 rounded-lg border border-gray-200 hover:bg-indigo-50 focus:ring-2 focus:ring-indigo-400 transition-colors"
               disabled={isLoading}
             >
-              "{prompt}"
+              {prompt}
             </button>
           ))}
         </div>
