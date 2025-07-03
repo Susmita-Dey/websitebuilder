@@ -1,20 +1,20 @@
-# Use official Python image
+# Use official slim Python image
 FROM python:3.10-slim
 
-# Set working directory
-WORKDIR /app
+# Set the working directory to the container root (or omit WORKDIR entirely)
+WORKDIR /backend
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y gcc
+# Install required system packages
+RUN apt-get update && apt-get install -y build-essential gcc curl && apt-get clean
 
-# Copy files
+# Copy all contents from the backend folder (where this Dockerfile is) into /backend
 COPY . .
 
-# Install dependencies
+# Install Python dependencies
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
-# Expose port (Render uses 10000)
+# Expose the port expected by Render
 EXPOSE 10000
 
-# Start the FastAPI app
+# Run the FastAPI app
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "10000"]
