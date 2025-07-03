@@ -1,21 +1,27 @@
-# NOTE: Kindly run the application locally for smooth experience because the AI API calls are rate-limited and may not work on the live demo. Use your onw Gemini API key under backend folder
+### NOTE: Kindly run the application locally for smooth experience because the AI API calls are rate-limited and may not work on the live demo. Use your own Gemini API key under backend folder
 
 ---
 
 # AI-Powered Website Generator
 ## 🌐 **Overview:**
-This project is a **full-stack AI-powered website generator** that allows users to create multi-page websites by simply describing their needs. It leverages OpenAI's GPT-4 API for intelligent content generation and provides a clean, intuitive interface for managing and editing websites.
+This project is a **full-stack AI-powered website generator** that allows users to create multi-page websites by simply describing their needs. It leverages Gemini AI's API for intelligent content generation and provides a clean, intuitive interface for managing and editing websites.
+
 ## 🛠️ **Features:**
+
 ✅ **Prompt-to-Website Generation** - Users describe their website and get multi-page sites
+
 ✅ **CMS-like Page View** - Clean dashboard showing all pages with navigation
+
 ✅ **Visual Preview** - Full website preview in iframe
+
 ✅ **Visual Editing (Bonus)** - Click-to-edit any text element
+
 ✅ **AI-Powered Edits (Bonus)** - Natural language editing commands
 
 ## **Tech Stack:**
 - **Frontend**: Next.js 14, React, Tailwind CSS
 - **Backend**: FastAPI (Python)
-- **AI**: OpenAI GPT-4 API
+- **AI**: Gemini AI
 - **Architecture**: Clean, modular, production-ready
 
 ## 🚀 **Key Highlights:**
@@ -51,7 +57,7 @@ cd backend
 python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-echo "OPENAI_API_KEY=your_key_here" > .env
+echo "GEMINI_API_KEY=your_key_here" > .env
 uvicorn main:app --reload
 ```
 
