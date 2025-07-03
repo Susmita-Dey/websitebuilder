@@ -4,9 +4,15 @@ from api.routes import router as api_router
 
 app = FastAPI(title="AI Website Generator API")
 
+# Allow your Vercel frontend domain
+origins = [
+    "https://websitebuilder-ten.vercel.app",
+    "http://localhost:3000",  # (optional, for local dev)
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
