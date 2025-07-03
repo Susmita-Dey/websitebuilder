@@ -1,5 +1,5 @@
 # Use Python 3.11
-FROM python:3.11-slim
+FROM python:3.10-slim
 
 # Set work directory
 WORKDIR /app
@@ -15,4 +15,4 @@ COPY . .
 EXPOSE 10000
 
 # Start the app
-CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "10000"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "10000"]
